@@ -14,7 +14,7 @@
 
 
 CAN_HandleTypeDef CanHandle;
-
+TIM_Base_InitTypeDef Timer;
 
 char makeFramedCANMessage(int *currentArrIndex, uint8_t *outArr, uint8_t *mode);
 char parseArray(uint8_t *inArr, uint16_t inArrLength, int arrType, uint8_t *outArr, uint16_t *outArrLength);

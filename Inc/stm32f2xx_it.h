@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    stm32f2xx_it.h
-  * @date    21/05/2015 17:11:10
+  * @date    23/05/2015 11:09:43
   * @brief   This file contains the headers of the interrupt handlers.
   ******************************************************************************
   *
@@ -46,6 +46,7 @@
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 
+void TIM6_DAC_IRQHandler(void);
 void SysTick_Handler(void);
 
 #ifdef __cplusplus

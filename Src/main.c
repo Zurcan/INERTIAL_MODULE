@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : main.c
-  * Date               : 21/05/2015 17:11:11
+  * Date               : 23/05/2015 11:09:43
   * Description        : Main program body
   ******************************************************************************
   *
@@ -36,6 +36,7 @@
 #include "stm32f2xx_hal.h"
 #include "can.h"
 #include "i2c.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
@@ -137,6 +138,8 @@ void SystemClock_Config(void);
 #define CAN_SHDN_PORT GPIOB
 #define CAN_SHDN_PIN GPIO_PIN_15
 
+#define LED_LEG_PORT GPIOC
+#define LED_LEG_PIN GPIO_PIN_0
 //#define RESET_CSM_PORT GPIOB
 //#define RESET_CSM_PIN GPIO_PIN_7
 //
@@ -168,6 +171,7 @@ int main(void)
   MX_GPIO_Init();
   MX_CAN2_Init();
   MX_I2C1_Init();
+  MX_TIM6_Init();
 
   /* USER CODE BEGIN 2 */
   inc = 0;
@@ -175,6 +179,7 @@ int main(void)
   volatile uint8_t arr[sizeof(tmp)];
   var2ArrConverter((char*)&tmp,sizeof(tmp),arr);
   volatile const uint8_t someval= calcCSofArr(arr,7);
+  HAL_TIM_Base_Start_IT(&htim6);
 //  HAL_GPIO_WritePin(RESET_CSM_PORT,RESET_CSM_PIN,1);
  // HAL_UART_Receive_IT(&huart4, mas, 1); //Принимает в массив байты строки
 //  HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
@@ -196,6 +201,7 @@ int main(void)
 	  MDLUTransmitData.service =0x12;
 	  MDLUTransmitData.CSL = 0;
 	  MDLUTransmitData.CSL= calcCSofArr((uint8_t*)&MDLUTransmitData,8);
+//	  HAL_GPIO_TogglePin(LED_LEG_PORT,LED_LEG_PIN);
 
   }
   /* USER CODE END 3 */
@@ -472,6 +478,10 @@ void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)
 //	}
 }
 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	HAL_GPIO_TogglePin(LED_LEG_PORT,LED_LEG_PIN);
+}
 
 
 

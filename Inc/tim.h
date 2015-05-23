@@ -1,9 +1,9 @@
 /**
   ******************************************************************************
-  * File Name          : gpio.h
-  * Date               : 23/05/2015 11:09:42
-  * Description        : This file contains all the functions prototypes for 
-  *                      the gpio  
+  * File Name          : TIM.h
+  * Date               : 23/05/2015 11:09:43
+  * Description        : This file provides code for the configuration
+  *                      of the TIM instances.
   ******************************************************************************
   *
   * COPYRIGHT(c) 2015 STMicroelectronics
@@ -32,21 +32,24 @@
   *
   ******************************************************************************
   */
-
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __gpio_H
-#define __gpio_H
+#ifndef __tim_H
+#define __tim_H
 #ifdef __cplusplus
  extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f2xx_hal.h"
-void MX_GPIO_Init(void);
+
+extern TIM_HandleTypeDef htim6;
+
+void MX_TIM6_Init(void);
+
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ pinoutConfig_H */
+#endif /*__ tim_H */
 
 /**
   * @}

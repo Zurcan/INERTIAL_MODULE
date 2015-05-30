@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    stm32f2xx_it.c
-  * @date    23/05/2015 11:09:43
+  * @date    28/05/2015 18:11:18
   * @brief   Interrupt Service Routines.
   ******************************************************************************
   *
@@ -41,10 +41,25 @@
 /* External variables --------------------------------------------------------*/
 
 extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim7;
 
 /******************************************************************************/
 /*            Cortex-M3 Processor Interruption and Exception Handlers         */ 
 /******************************************************************************/
+
+/**
+* @brief This function handles TIM7 global interrupt.
+*/
+void TIM7_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM7_IRQn 0 */
+
+  /* USER CODE END TIM7_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim7);
+  /* USER CODE BEGIN TIM7_IRQn 1 */
+
+  /* USER CODE END TIM7_IRQn 1 */
+}
 
 /**
 * @brief This function handles TIM6 global interrupt, DAC1 and DAC2 underrun error interrupts.

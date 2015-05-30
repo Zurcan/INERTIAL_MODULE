@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : main.c
-  * Date               : 23/05/2015 11:09:43
+  * Date               : 28/05/2015 18:11:18
   * Description        : Main program body
   ******************************************************************************
   *
@@ -157,6 +157,7 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 	beginCANTransmitFlag = 0;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -172,6 +173,7 @@ int main(void)
   MX_CAN2_Init();
   MX_I2C1_Init();
   MX_TIM6_Init();
+  MX_TIM7_Init();
 
   /* USER CODE BEGIN 2 */
   inc = 0;
@@ -179,7 +181,28 @@ int main(void)
   volatile uint8_t arr[sizeof(tmp)];
   var2ArrConverter((char*)&tmp,sizeof(tmp),arr);
   volatile const uint8_t someval= calcCSofArr(arr,7);
-  HAL_TIM_Base_Start_IT(&htim6);
+  IMfreqs.MDADFrequency = 20;
+  IMfreqs.MDLUFrequency = 200;
+  IMfreqs.MDUSFrequency = 180;
+  IMfreqs.totalFrequency = 400;
+  checkFrequencies();
+//  Freq = 500;
+  FreqPresc = CoreFreq/(IMfreqs.totalFrequency *10);
+//  FreqMDLU = 240;
+//  FreqMDUS = 240;
+//  FreqMDAD = 20;
+  htim7.Init.Prescaler = FreqPresc*0.908;
+  htim7.Init.Period = 10;
+
+
+  HAL_TIM_Base_Init(&htim7);
+  HAL_TIM_Base_Start_IT(&htim7);
+  volatile int clock = HAL_RCC_GetSysClockFreq();
+  clock = HAL_RCC_GetPCLK1Freq();
+  clock = HAL_RCC_GetHCLKFreq();
+  clock = HAL_RCC_GetPCLK2Freq();
+  volatile RCC_OscInitTypeDef rccConf;
+  HAL_RCC_GetOscConfig(&rccConf);
 //  HAL_GPIO_WritePin(RESET_CSM_PORT,RESET_CSM_PIN,1);
  // HAL_UART_Receive_IT(&huart4, mas, 1); //Принимает в массив байты строки
 //  HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
@@ -234,8 +257,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
   HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3);
 
-  HAL_RCC_EnableCSS();
-
 }
 
 /* USER CODE BEGIN 4 */
@@ -263,9 +284,81 @@ void SystemClock_Config(void)
 //	return 0;
 //}
 
+/*
+ * procedure func calculate which of subdevices'(MDLU,MDUS,MDAD) data should now be transmitted on CAN
+ * also checks cycle state: 0 means transmition to be continued, 1 means last subdevice tick, and beginning new cycle
+ * of transmition on next step
+ */
+char freqQueue(char *f)
+{
+	double MDLUweightGain = (double)((double)IMfreqs.totalFrequency/(double)IMfreqs.MDLUFrequency)*(double)IMfreqs.MDLUtickCounter;
+	double MDUSweightGain = (double)((double)IMfreqs.totalFrequency/(double)IMfreqs.MDUSFrequency)*(double)IMfreqs.MDUStickCounter;
+	double MDADweightGain = (double)((double)IMfreqs.totalFrequency/(double)IMfreqs.MDADFrequency)*(double)IMfreqs.MDADtickCounter;
+	*f = 3;
+	if(MDLUweightGain>=MDUSweightGain)
+	{
+		if(MDUSweightGain<=MDADweightGain)
+		{
+			if(IMfreqs.MDUStickCounter<IMfreqs.totalFrequency)
+			{
+				IMfreqs.MDUStickCounter++;
+				*f = MDUSFrequency;
+				return 0;
+			}
+			else return 1;
+		}
+		else
+		{
+			if(IMfreqs.MDADtickCounter<IMfreqs.totalFrequency)
+			{
+				IMfreqs.MDADtickCounter++;
+				*f = MDADFrequency;
+				return 0;
+			}
+			else return 1;
+		}
+	}
+	else
+	{
+		if(MDLUweightGain<=MDADweightGain)
+		{
+			if(IMfreqs.MDLUtickCounter<IMfreqs.totalFrequency)
+			{
+				IMfreqs.MDLUtickCounter++;
+				*f = MDLUFrequency;
+				return 0;
+			}
+			else return 1;
+		}
+		else
+		{
+			if(IMfreqs.MDADtickCounter<IMfreqs.totalFrequency)
+			{
+				IMfreqs.MDADtickCounter++;
+				*f = MDADFrequency;
+				return 0;
+			}
+			else return 1;
+		}
+	}
 
-
-
+}
+/*
+ * check correctness of desired MDAD,MDLU and MDUS frequencies, do their sum is equal to totalFrequency of device
+ * returns 0 if ok, and  1 if nope
+ */
+char checkFrequencies()
+{
+	if(IMfreqs.totalFrequency == (IMfreqs.MDUSFrequency+IMfreqs.MDLUFrequency+IMfreqs.MDADFrequency))
+	{
+		IMfreqs.MDLUtickCounter = 0;
+		IMfreqs.MDUSFrequency = 0;
+		IMfreqs.MDADtickCounter = 0;
+		return 0;
+	}
+	else
+		return 1;
+}
 
 char parseArray(uint8_t *inArr, uint16_t inArrLength, int arrType, uint8_t *outArr, uint16_t *outArrLength)
 {
@@ -480,6 +573,9 @@ void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+	volatile char f;
+	if(freqQueue(&f)==1)
+		checkFrequencies();
 	HAL_GPIO_TogglePin(LED_LEG_PORT,LED_LEG_PIN);
 }
 

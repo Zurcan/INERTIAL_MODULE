@@ -1,5 +1,5 @@
 #MicroXplorer Configuration settings - do not modify
-#Thu May 28 18:11:17 MSK 2015
+#Fri Jun 05 10:28:46 MSK 2015
 CAN2.BS1-Slave=CAN_BS1_6TQ
 CAN2.BS2-Slave=CAN_BS2_8TQ
 CAN2.CalculateTimeBit-Slave=8010
@@ -112,7 +112,7 @@ RCC.HSE_VALUE=8000000
 RCC.HSICalibrationValue=1
 RCC.HSI_VALUE=16000000
 RCC.I2SClocksFreq_Value=96000000
-RCC.IPParameters=LSI_VALUE,APB1TimFreq_Value,APB2Freq_Value,MCO2PinFreq_Value,APB1CLKDivider,FCLKCortexFreq_Value,AHBFreq_Value,48MHZClocksFreq_Value,VCOInputFreq_Value,I2SClocksFreq_Value,PLLSourceVirtual,SYSCLKFreq_VALUE,HSICalibrationValue,SYSCLKSource,LSE_VALUE,HSE_VALUE,HSI_VALUE,VCOI2SOutputFreq_Value,PLLCLKFreq_Value,RTCFreq_Value,FamilyName,HCLKFreq_Value,EthernetFreq_Value,APB2CLKDivider,PLLM,PLLN,VCOOutputFreq_Value,VcooutputI2S,CortexFreq_Value,APB1Freq_Value,RTCHSEDivFreq_Value,APB2TimFreq_Value
+RCC.IPParameters=LSI_VALUE,APB1TimFreq_Value,APB2Freq_Value,MCO2PinFreq_Value,APB1CLKDivider,FCLKCortexFreq_Value,48MHZClocksFreq_Value,AHBFreq_Value,VCOInputFreq_Value,PLLSourceVirtual,I2SClocksFreq_Value,SYSCLKFreq_VALUE,HSICalibrationValue,SYSCLKSource,LSE_VALUE,HSE_VALUE,HSI_VALUE,VCOI2SOutputFreq_Value,PLLCLKFreq_Value,RTCFreq_Value,FamilyName,HCLKFreq_Value,EthernetFreq_Value,APB2CLKDivider,PLLM,PLLN,VCOOutputFreq_Value,VcooutputI2S,CortexFreq_Value,APB1Freq_Value,RTCHSEDivFreq_Value,APB2TimFreq_Value
 RCC.LSE_VALUE=32768
 RCC.LSI_VALUE=32000
 RCC.MCO2PinFreq_Value=120000000

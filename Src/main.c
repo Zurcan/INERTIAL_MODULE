@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : main.c
-  * Date               : 28/05/2015 18:11:18
+  * Date               : 05/06/2015 10:28:47
   * Description        : Main program body
   ******************************************************************************
   *
@@ -181,18 +181,19 @@ int main(void)
   volatile uint8_t arr[sizeof(tmp)];
   var2ArrConverter((char*)&tmp,sizeof(tmp),arr);
   volatile const uint8_t someval= calcCSofArr(arr,7);
+  hcan2.pTxMsg = &TxMessage;
   IMfreqs.MDADFrequency = 20;
-  IMfreqs.MDLUFrequency = 200;
+  IMfreqs.MDLUFrequency = 300;
   IMfreqs.MDUSFrequency = 180;
-  IMfreqs.totalFrequency = 400;
+  IMfreqs.totalFrequency = 500;
   checkFrequencies();
 //  Freq = 500;
-  FreqPresc = CoreFreq/(IMfreqs.totalFrequency *10);
+  FreqPresc = CoreFreq/(IMfreqs.totalFrequency);
 //  FreqMDLU = 240;
 //  FreqMDUS = 240;
 //  FreqMDAD = 20;
-  htim7.Init.Prescaler = FreqPresc*0.908;
-  htim7.Init.Period = 10;
+  htim7.Init.Prescaler = FreqPresc;//*0.908;
+  htim7.Init.Period = 1;
 
 
   HAL_TIM_Base_Init(&htim7);
@@ -222,8 +223,18 @@ int main(void)
 	  MDLUTransmitData.LAy = 14;
 	  MDLUTransmitData.LAz = 22;
 	  MDLUTransmitData.service =0x12;
-	  MDLUTransmitData.CSL = 0;
-	  MDLUTransmitData.CSL= calcCSofArr((uint8_t*)&MDLUTransmitData,8);
+//	  MDLUTransmitData.CSL = 0;
+//	  MDLUTransmitData.CSL= calcCSofArr((uint8_t*)&MDLUTransmitData,8);
+	  MDUSTransmitData.ARx = 100;
+	  MDUSTransmitData.ARy = 170;
+	  MDUSTransmitData.ARz = 33;
+	  MDLUTransmitData.service =0x14;
+
+	  MDADTransmitData.pressure = 100000;
+	  MDADTransmitData.temperature = 22.1;
+	  MDADTransmitData.service = 0x13;
+//	  MDLUTransmitData.CSL = 0;
+//	  MDLUTransmitData.CSL= calcCSofArr((uint8_t*)&MDLUTransmitData,8);
 //	  HAL_GPIO_TogglePin(LED_LEG_PORT,LED_LEG_PIN);
 
   }
@@ -352,7 +363,7 @@ char checkFrequencies()
 	if(IMfreqs.totalFrequency == (IMfreqs.MDUSFrequency+IMfreqs.MDLUFrequency+IMfreqs.MDADFrequency))
 	{
 		IMfreqs.MDLUtickCounter = 0;
-		IMfreqs.MDUSFrequency = 0;
+		IMfreqs.MDUStickCounter = 0;
 		IMfreqs.MDADtickCounter = 0;
 		return 0;
 	}
@@ -574,8 +585,47 @@ void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	volatile char f;
+	char msgtype = 0x0;
+	char devtype;
+	short serial = 0x0011;
+	char priority = 0, mesMode = 0;
+	//	IIMinstr = IIM_disablePolling_MDUS;
 	if(freqQueue(&f)==1)
 		checkFrequencies();
+	else
+		switch(f)
+		{
+			case 0:
+			{
+				devtype = MDLU;
+//				prepareEXTID(serial,msgtype,devtype,priority,modeCANmsg);
+				prepareSTDID(SingleMessage,IIMdata);
+				setTxDataMessage(MDLU);
+				HAL_CAN_Transmit(&hcan2, 10);
+				break;
+			}
+			case 1:
+			{
+				devtype = MDUS;
+//				prepareEXTID(serial,msgtype,devtype,priority,modeCANmsg);
+				prepareSTDID(SingleMessage,IIMdata);
+				setTxDataMessage(MDUS);
+				HAL_CAN_Transmit(&hcan2, 10);
+				break;
+			}
+			case 2:
+			{
+				devtype = MDAD;
+//				prepareEXTID(serial,msgtype,devtype,priority,modeCANmsg);
+				prepareSTDID(SingleMessage,IIMdata);
+				setTxDataMessage(MDAD);
+				HAL_CAN_Transmit(&hcan2, 10);
+				break;
+			}
+			default:
+				break;
+		}
+
 	HAL_GPIO_TogglePin(LED_LEG_PORT,LED_LEG_PIN);
 }
 

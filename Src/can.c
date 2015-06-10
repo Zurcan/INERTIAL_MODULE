@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : CAN.c
-  * Date               : 05/06/2015 10:28:47
+  * Date               : 08/06/2015 17:43:59
   * Description        : This file provides code for the configuration
   *                      of the CAN instances.
   ******************************************************************************
@@ -50,7 +50,7 @@ void MX_CAN2_Init(void)
 
   hcan2.Instance = CAN2;
   hcan2.Init.Prescaler = 16;
-  hcan2.Init.Mode = CAN_MODE_LOOPBACK;
+  hcan2.Init.Mode = CAN_MODE_NORMAL;
   hcan2.Init.SJW = CAN_SJW_1TQ;
   hcan2.Init.BS1 = CAN_BS1_6TQ;
   hcan2.Init.BS2 = CAN_BS2_8TQ;
@@ -88,6 +88,11 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)
     GPIO_InitStruct.Alternate = GPIO_AF9_CAN2;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+    /* Peripheral interrupt init*/
+    HAL_NVIC_SetPriority(CAN2_RX1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(CAN2_RX1_IRQn);
+    HAL_NVIC_SetPriority(CAN2_RX0_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(CAN2_RX0_IRQn);
   /* USER CODE BEGIN CAN2_MspInit 1 */
 
   /* USER CODE END CAN2_MspInit 1 */
@@ -111,6 +116,11 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* hcan)
     PB6     ------> CAN2_TX 
     */
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_5|GPIO_PIN_6);
+
+    /* Peripheral interrupt Deinit*/
+    HAL_NVIC_DisableIRQ(CAN2_RX1_IRQn);
+
+    HAL_NVIC_DisableIRQ(CAN2_RX0_IRQn);
 
   /* USER CODE BEGIN CAN2_MspDeInit 1 */
 

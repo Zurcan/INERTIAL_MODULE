@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : main.c
-  * Date               : 05/06/2015 10:28:47
+  * Date               : 08/06/2015 17:44:00
   * Description        : Main program body
   ******************************************************************************
   *
@@ -197,7 +197,7 @@ int main(void)
 
 
   HAL_TIM_Base_Init(&htim7);
-  HAL_TIM_Base_Start_IT(&htim7);
+//  HAL_TIM_Base_Start_IT(&htim7);
   volatile int clock = HAL_RCC_GetSysClockFreq();
   clock = HAL_RCC_GetPCLK1Freq();
   clock = HAL_RCC_GetHCLKFreq();
@@ -206,13 +206,14 @@ int main(void)
   HAL_RCC_GetOscConfig(&rccConf);
 //  HAL_GPIO_WritePin(RESET_CSM_PORT,RESET_CSM_PIN,1);
  // HAL_UART_Receive_IT(&huart4, mas, 1); //Принимает в массив байты строки
-//  HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
+
 
 //  HAL_Delay(20000);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN 3 */
   HAL_GPIO_WritePin(CAN_SHDN_PORT,CAN_SHDN_PIN,0);
+  HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
 //  CanRxMsgTypeDef *rxmes;
 
 //  HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
@@ -513,6 +514,7 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
 	if(hcan->Instance==CAN2)
 	{
 		HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
+		HAL_GPIO_TogglePin(LED_LEG_PORT,LED_LEG_PIN);
 	}
 }
 void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)

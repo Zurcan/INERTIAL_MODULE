@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : stm32f2xx_hal_msp.c
-  * Date               : 08/06/2015 17:43:59
+  * Date               : 17/06/2015 17:18:39
   * Description        : This file provides code for the MSP Initialization 
   *                      and de-Initialization codes.
   ******************************************************************************
@@ -52,7 +52,7 @@ void HAL_MspInit(void)
 
   /* System interrupt init*/
 /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 2, 0);
+  HAL_NVIC_SetPriority(SysTick_IRQn, 10, 0);
 
   /* USER CODE BEGIN MspInit 1 */
 

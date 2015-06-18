@@ -1,11 +1,11 @@
 #MicroXplorer Configuration settings - do not modify
-#Mon Jun 08 17:43:59 MSK 2015
+#Wed Jun 17 17:18:38 MSK 2015
 CAN2.BS1-Slave=CAN_BS1_6TQ
 CAN2.BS2-Slave=CAN_BS2_8TQ
 CAN2.CalculateTimeBit-Slave=8010
 CAN2.CalculateTimeQuantum-Slave=534
 CAN2.IPParameters=Mode-Slave,NART-Slave,Prescaler-Slave,BS2-Slave,CalculateTimeBit-Slave,CalculateTimeQuantum-Slave,BS1-Slave
-CAN2.Mode-Slave=CAN_MODE_NORMAL
+CAN2.Mode-Slave=CAN_MODE_LOOPBACK
 CAN2.NART-Slave=ENABLE
 CAN2.Prescaler-Slave=16
 File.Version=4
@@ -38,9 +38,9 @@ Mcu.PinsNb=13
 Mcu.UserName=STM32F205RGTx
 MxCube.Version=4.5.0
 NVIC.CAN2_RX0_IRQn=true\:1\:0\:true
-NVIC.CAN2_RX1_IRQn=true\:0\:0\:false
+NVIC.CAN2_SCE_IRQn=true\:0\:0\:false
 NVIC.PriorityGroup=NVIC_PRIORITYGROUP_4
-NVIC.SysTick_IRQn=true\:2\:0\:true
+NVIC.SysTick_IRQn=true\:10\:0\:true
 NVIC.TIM6_DAC_IRQn=true\:3\:0\:true
 NVIC.TIM7_IRQn=true\:4\:0\:true
 PA13.Mode=Serial-Wire
@@ -51,6 +51,10 @@ PB10.Locked=true
 PB10.Signal=GPXTI10
 PB15.Locked=true
 PB15.Signal=GPIO_Output
+PB5.GPIOParameters=GPIO_Speed,GPIO_PuPd,GPIO_Mode
+PB5.GPIO_Mode=GPIO_MODE_AF_PP
+PB5.GPIO_PuPd=GPIO_NOPULL
+PB5.GPIO_Speed=GPIO_SPEED_FAST
 PB5.Locked=true
 PB5.Mode=Slave
 PB5.Signal=CAN2_RX

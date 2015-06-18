@@ -34,11 +34,13 @@ typedef struct
 CAN_HandleTypeDef CanHandle;
 TIM_Base_InitTypeDef Timer;
 IMfrequencies IMfreqs;
+volatile int counter;
 
 char makeFramedCANMessage(int *currentArrIndex, uint8_t *outArr, uint8_t *mode);
 char parseArray(uint8_t *inArr, uint16_t inArrLength, int arrType, uint8_t *outArr, uint16_t *outArrLength);
 char freqQueue();					//procedure used to get which of inertial data is used to send via can on next step
 char checkFrequencies();
+void Error_Handler();
 
 //int var2ArrConverter(char * inpArr, int arrSize, char* outArr);
 #endif /* INERTIALMODULE_INC_MAIN_H_ */

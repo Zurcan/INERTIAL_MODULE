@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    stm32f2xx_it.h
-  * @date    08/06/2015 17:43:59
+  * @date    17/06/2015 17:18:39
   * @brief   This file contains the headers of the interrupt handlers.
   ******************************************************************************
   *
@@ -49,8 +49,8 @@
 void TIM7_IRQHandler(void);
 void TIM6_DAC_IRQHandler(void);
 void SysTick_Handler(void);
-void CAN2_RX1_IRQHandler(void);
 void CAN2_RX0_IRQHandler(void);
+void CAN2_SCE_IRQHandler(void);
 
 #ifdef __cplusplus
 }

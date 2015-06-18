@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : main.c
-  * Date               : 08/06/2015 17:44:00
+  * Date               : 17/06/2015 17:18:39
   * Description        : Main program body
   ******************************************************************************
   *
@@ -176,12 +176,14 @@ int main(void)
   MX_TIM7_Init();
 
   /* USER CODE BEGIN 2 */
+//  HAL_CAN_MspInit(&hcan2);
   inc = 0;
   double tmp = 1.2;
   volatile uint8_t arr[sizeof(tmp)];
   var2ArrConverter((char*)&tmp,sizeof(tmp),arr);
   volatile const uint8_t someval= calcCSofArr(arr,7);
   hcan2.pTxMsg = &TxMessage;
+  hcan2.pRxMsg = &RxMessage;
   IMfreqs.MDADFrequency = 20;
   IMfreqs.MDLUFrequency = 300;
   IMfreqs.MDUSFrequency = 180;
@@ -194,10 +196,26 @@ int main(void)
 //  FreqMDAD = 20;
   htim7.Init.Prescaler = FreqPresc;//*0.908;
   htim7.Init.Period = 1;
+  CAN_FilterConfTypeDef sFilterConfig;
+  sFilterConfig.BankNumber = 0;
+  sFilterConfig.FilterActivation = ENABLE;
+  sFilterConfig.FilterFIFOAssignment = CAN_FILTER_FIFO0;
+  sFilterConfig.FilterIdHigh = 0x0;// дкс
+  sFilterConfig.FilterIdLow = 0x000C;
+  sFilterConfig.FilterMaskIdHigh = 0x0;
+  sFilterConfig.FilterMaskIdLow = 0x0;
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+  sFilterConfig.FilterNumber = 0;
+  sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+  HAL_CAN_ConfigFilter(&hcan2, &sFilterConfig);
+//
+//
 
-
+  HAL_CAN_Init(&hcan2);
+//  HAL_NVIC_EnableIRQ(CAN2_RX0_IRQn);
+//  HAL_NVIC_SetPriority(CAN2_RX0_IRQn, 1, 0);
   HAL_TIM_Base_Init(&htim7);
-//  HAL_TIM_Base_Start_IT(&htim7);
+  HAL_TIM_Base_Start_IT(&htim7);
   volatile int clock = HAL_RCC_GetSysClockFreq();
   clock = HAL_RCC_GetPCLK1Freq();
   clock = HAL_RCC_GetHCLKFreq();
@@ -220,6 +238,10 @@ int main(void)
   /* Infinite loop */
   while (1)
   {
+	  if(HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0)!=HAL_OK)
+		{
+			Error_Handler();
+		}
 	  MDLUTransmitData.LAx = 10;
 	  MDLUTransmitData.LAy = 14;
 	  MDLUTransmitData.LAz = 22;
@@ -506,16 +528,45 @@ char makeFramedCANMessage(int *currentArrIndex, uint8_t *outArr, uint8_t *mode)
 }
 
 
+void Error_Handler()
+{
+	volatile uint32_t tmpError=0;
+	volatile HAL_CAN_StateTypeDef tmpStatus=0;
+	tmpError = HAL_CAN_GetError(&hcan2);
+	if(tmpError==0)
+	{
+		tmpStatus = HAL_CAN_GetState(&hcan2);
+	}
+	if(tmpStatus!=HAL_CAN_STATE_READY)
+	{
+		hcan2.State = HAL_CAN_STATE_READY;
+//		HAL_CAN_DeInit(&hcan2);
+//		HAL_CAN_Init(&hcan2);
+	}
 
+}
 
 void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
 {
+	if (hcan->pRxMsg->FIFONumber == 0)
+	{
 
+	}
+	if (hcan->pRxMsg->FIFONumber == 1)
+	{
+
+	}
 	if(hcan->Instance==CAN2)
 	{
-		HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
+//		HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
+		counter++;
 		HAL_GPIO_TogglePin(LED_LEG_PORT,LED_LEG_PIN);
 	}
+	HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
+//	if(HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0)!= HAL_OK)
+//	{
+//		Error_Handler();
+//	}
 }
 void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 {
@@ -601,27 +652,30 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			{
 				devtype = MDLU;
 //				prepareEXTID(serial,msgtype,devtype,priority,modeCANmsg);
+				HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
 				prepareSTDID(SingleMessage,IIMdata);
 				setTxDataMessage(MDLU);
-				HAL_CAN_Transmit(&hcan2, 10);
+				HAL_CAN_Transmit(&hcan2, 20);
 				break;
 			}
 			case 1:
 			{
 				devtype = MDUS;
 //				prepareEXTID(serial,msgtype,devtype,priority,modeCANmsg);
+				HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
 				prepareSTDID(SingleMessage,IIMdata);
 				setTxDataMessage(MDUS);
-				HAL_CAN_Transmit(&hcan2, 10);
+				HAL_CAN_Transmit(&hcan2, 20);
 				break;
 			}
 			case 2:
 			{
 				devtype = MDAD;
 //				prepareEXTID(serial,msgtype,devtype,priority,modeCANmsg);
+				HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
 				prepareSTDID(SingleMessage,IIMdata);
 				setTxDataMessage(MDAD);
-				HAL_CAN_Transmit(&hcan2, 10);
+				HAL_CAN_Transmit(&hcan2, 20);
 				break;
 			}
 			default:

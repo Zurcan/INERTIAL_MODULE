@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : main.c
-  * Date               : 17/06/2015 17:18:39
+  * Date               : 19/06/2015 09:25:48
   * Description        : Main program body
   ******************************************************************************
   *
@@ -215,7 +215,7 @@ int main(void)
 //  HAL_NVIC_EnableIRQ(CAN2_RX0_IRQn);
 //  HAL_NVIC_SetPriority(CAN2_RX0_IRQn, 1, 0);
   HAL_TIM_Base_Init(&htim7);
-  HAL_TIM_Base_Start_IT(&htim7);
+//  HAL_TIM_Base_Start_IT(&htim7);
   volatile int clock = HAL_RCC_GetSysClockFreq();
   clock = HAL_RCC_GetPCLK1Freq();
   clock = HAL_RCC_GetHCLKFreq();

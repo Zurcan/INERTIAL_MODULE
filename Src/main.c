@@ -1,7 +1,6 @@
 /**
   ******************************************************************************
   * File Name          : main.c
-  * Date               : 19/06/2015 09:25:48
   * Description        : Main program body
   ******************************************************************************
   *
@@ -37,6 +36,7 @@
 #include "can.h"
 #include "i2c.h"
 #include "tim.h"
+#include "usart.h"
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
@@ -110,9 +110,14 @@ uint8_t		h52BINRmas[224];		//массив с прин€тым пакетом 52
 bool	h52BINRok;				//флаг прит€ного массива 52
 uint8_t		h88BINRmas[69];			//массив с прин€тым пакетом 88
 bool	h88BINRok;				//флаг прит€ного массива 88
+//uint8_t
 int dataArrIndex;
 int mesCount =86;
 uint8_t modeCANmsg;
+int size = 0;
+uint8_t INSstructArr[72];
+volatile uint8_t messg[8];
+volatile int cntr=0;
 
 unsigned short Serial;//
 unsigned char MsgType,Devtype,Priority,MsgMode;
@@ -125,6 +130,7 @@ bool beginCANTransmitFlag;
 int canMessCounter=0;
 char inc;
 int rpuChannelsQty=0;
+INSCoordMessage insdata;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -174,6 +180,7 @@ int main(void)
   MX_I2C1_Init();
   MX_TIM6_Init();
   MX_TIM7_Init();
+  MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
 //  HAL_CAN_MspInit(&hcan2);
@@ -184,11 +191,13 @@ int main(void)
   volatile const uint8_t someval= calcCSofArr(arr,7);
   hcan2.pTxMsg = &TxMessage;
   hcan2.pRxMsg = &RxMessage;
+  TxMessage.StdId = &STDID;
   IMfreqs.MDADFrequency = 20;
   IMfreqs.MDLUFrequency = 300;
   IMfreqs.MDUSFrequency = 180;
   IMfreqs.totalFrequency = 500;
   checkFrequencies();
+  HAL_UART_Receive_IT(&huart1,mas,1);
 //  Freq = 500;
   FreqPresc = CoreFreq/(IMfreqs.totalFrequency);
 //  FreqMDLU = 240;
@@ -207,14 +216,14 @@ int main(void)
   sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
   sFilterConfig.FilterNumber = 0;
   sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
-  HAL_CAN_ConfigFilter(&hcan2, &sFilterConfig);
+//  HAL_CAN_ConfigFilter(&hcan2, &sFilterConfig);
 //
 //
 
   HAL_CAN_Init(&hcan2);
-//  HAL_NVIC_EnableIRQ(CAN2_RX0_IRQn);
+//  HAL_NVIC_EnableIRQ(CAN2_TX_IRQn);
 //  HAL_NVIC_SetPriority(CAN2_RX0_IRQn, 1, 0);
-  HAL_TIM_Base_Init(&htim7);
+//  HAL_TIM_Base_Init(&htim7);
 //  HAL_TIM_Base_Start_IT(&htim7);
   volatile int clock = HAL_RCC_GetSysClockFreq();
   clock = HAL_RCC_GetPCLK1Freq();
@@ -224,43 +233,106 @@ int main(void)
   HAL_RCC_GetOscConfig(&rccConf);
 //  HAL_GPIO_WritePin(RESET_CSM_PORT,RESET_CSM_PIN,1);
  // HAL_UART_Receive_IT(&huart4, mas, 1); //ѕринимает в массив байты строки
-
-
+//  volatile INSCoordMessage *insdata;
+//  insdata = new INSCoordMessage;
 //  HAL_Delay(20000);
   /* USER CODE END 2 */
 
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+//  while (1)
+//  {
+  /* USER CODE END WHILE */
+
   /* USER CODE BEGIN 3 */
+  module = INScoords;
   HAL_GPIO_WritePin(CAN_SHDN_PORT,CAN_SHDN_PIN,0);
-  HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
+//  HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
 //  CanRxMsgTypeDef *rxmes;
+  size = getArraySize((uint8_t*)&insdata,sizeof(INSCoordMessage));
+  insdata.XIN = 0;
+  insdata.YIN = 1;
+  insdata.ZIN = 2;
+  insdata.aX = 3;
+  insdata.aY = 4;
+  insdata.aZ = 5;
+  insdata.angleX = 6;
+  insdata.angleY = 7;
+  insdata.angleZ = 8;
+  insdata.wX = 9;
+  insdata.wY = 10;
+  insdata.wZ = 11;
+  insdata.xDIS = 12;
+  insdata.yDIS = 13;
+  insdata.zDIS = 14;
 
 //  HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
   /* Infinite loop */
   while (1)
   {
-	  if(HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0)!=HAL_OK)
-		{
-			Error_Handler();
-		}
-	  MDLUTransmitData.LAx = 10;
-	  MDLUTransmitData.LAy = 14;
-	  MDLUTransmitData.LAz = 22;
-	  MDLUTransmitData.service =0x12;
-//	  MDLUTransmitData.CSL = 0;
-//	  MDLUTransmitData.CSL= calcCSofArr((uint8_t*)&MDLUTransmitData,8);
-	  MDUSTransmitData.ARx = 100;
-	  MDUSTransmitData.ARy = 170;
-	  MDUSTransmitData.ARz = 33;
-	  MDLUTransmitData.service =0x14;
+//	  if(HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0)!=HAL_OK)
+//		{
+//			Error_Handler();
+//		}
 
-	  MDADTransmitData.pressure = 100000;
-	  MDADTransmitData.temperature = 22.1;
-	  MDADTransmitData.service = 0x13;
+
+//	  INSstructArr= (uint8_t*)malloc((size_t)size);
+	  protocolMessageProcessor((uint8_t*)&insdata,sizeof(INSCoordMessage),INSstructArr);
+//	  cntr = mesQueueProcedure(INSstructArr,cntr,messg,size);
+//	  HAL_CAN_Transmit_IT(&hcan2);
+	  volatile int m;
+	  for(int i = 0; i < size/8; i++ )
+	  {
+
+		  cntr = mesQueueProcedure(INSstructArr,cntr,messg,size);
+		  if(i==0)
+			  m=3;
+		  else if(i==size/8-1)
+			 m=2;
+		  else
+			 m=1;
+		  prepareSTDID(m,module);
+		  setTxDataMessage(module,messg);
+		  hcan2.pTxMsg = &TxMessage;
+//		  hcan2.pRxMsg = &RxMessage;
+//		  TxMessage.StdId = &STDID;
+//		  HAL_CAN_Transmit_IT(&hcan2);
+//		  HAL_Delay(10);
+//		  if(HAL_CAN_Transmit(&hcan2,3)!=HAL_OK)
+//			  		{
+//			  			Error_Handler();
+//			  		}
+		  if(cntr!=-1)
+		  	  if(HAL_CAN_Transmit(&hcan2,5)!=HAL_OK)
+		  	  {
+		  		  Error_Handler();
+		  	  }
+//		  else
+//			  i = size/8;
+
+	  }
+	  cntr = 0;
+//	  MDLUTransmitData.LAx = 10;
+//	  MDLUTransmitData.LAy = 14;
+//	  MDLUTransmitData.LAz = 22;
+//	  MDLUTransmitData.service =0x12;
+////	  MDLUTransmitData.CSL = 0;
+////	  MDLUTransmitData.CSL= calcCSofArr((uint8_t*)&MDLUTransmitData,8);
+//	  MDUSTransmitData.ARx = 100;
+//	  MDUSTransmitData.ARy = 170;
+//	  MDUSTransmitData.ARz = 33;
+//	  MDLUTransmitData.service =0x14;
+//
+//	  MDADTransmitData.pressure = 100000;
+//	  MDADTransmitData.temperature = 22.1;
+//	  MDADTransmitData.service = 0x13;
 //	  MDLUTransmitData.CSL = 0;
 //	  MDLUTransmitData.CSL= calcCSofArr((uint8_t*)&MDLUTransmitData,8);
 //	  HAL_GPIO_TogglePin(LED_LEG_PORT,LED_LEG_PIN);
 
-  }
+//  }
+ }
+//}
   /* USER CODE END 3 */
 
 }
@@ -290,6 +362,12 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
   HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3);
+
+  HAL_RCC_EnableCSS();
+
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
 }
 
@@ -600,10 +678,33 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 //	}
 //
 //}
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if(huart->Instance==USART1)
+	{
+		HAL_UART_Receive_IT(&huart1, mas, 1);
+	}
+}
 void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)
 {
-//	if(hcan->Instance==CAN2)
-//	{
+	if(hcan->Instance==CAN2)
+	{
+		if(HAL_CAN_GetState(&hcan2)==HAL_CAN_STATE_READY)
+		  for(int i = 1; i < size/8; i++ )
+		  {
+			  cntr = mesQueueProcedure(INSstructArr,cntr,messg,size);
+			  HAL_CAN_Transmit_IT(&hcan2);
+	//		  HAL_Delay(10);
+	//		  if(HAL_CAN_Transmit(&hcan2,3)!=HAL_OK)
+	//			  		{
+	//			  			Error_Handler();
+	//			  		}
+	//		  if(cntr!=-1)
+	//		  	  HAL_CAN_Transmit(&hcan2,2);
+	//		  else
+	//			  i = size/8;
+
+		  }
 //		if(canMessCounter<mesCount)
 //			{
 //				if(canMessCounter<mesCount-1)
@@ -619,7 +720,8 @@ void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)
 //		//		beginCANTransmitFlag = false;
 //			}
 //		else canMessCounter=0;
-//	}
+
+	}
 //	if(HAL_CAN_GetState(&hcan2)==HAL_CAN_STATE_READY)
 //	{
 
@@ -633,6 +735,8 @@ void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)
 //			HAL_CAN_Transmit_IT()
 //		}
 //	}
+//	 HAL_CAN_IRQHandler(&hcan2);
+//	HAL_CAN_Transmit_IT(&hcan2);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -653,8 +757,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				devtype = MDLU;
 //				prepareEXTID(serial,msgtype,devtype,priority,modeCANmsg);
 				HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
-				prepareSTDID(SingleMessage,IIMdata);
-				setTxDataMessage(MDLU);
+				prepareSTDID(SingleMessage,INScoords);
+//				setTxDataMessage(MDLU);
 				HAL_CAN_Transmit(&hcan2, 20);
 				break;
 			}
@@ -663,8 +767,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				devtype = MDUS;
 //				prepareEXTID(serial,msgtype,devtype,priority,modeCANmsg);
 				HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
-				prepareSTDID(SingleMessage,IIMdata);
-				setTxDataMessage(MDUS);
+				prepareSTDID(SingleMessage,INScoords);
+//				setTxDataMessage(MDUS);
 				HAL_CAN_Transmit(&hcan2, 20);
 				break;
 			}
@@ -673,8 +777,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				devtype = MDAD;
 //				prepareEXTID(serial,msgtype,devtype,priority,modeCANmsg);
 				HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
-				prepareSTDID(SingleMessage,IIMdata);
-				setTxDataMessage(MDAD);
+				prepareSTDID(SingleMessage,INScoords);
+//				setTxDataMessage(MDAD);
 				HAL_CAN_Transmit(&hcan2, 20);
 				break;
 			}

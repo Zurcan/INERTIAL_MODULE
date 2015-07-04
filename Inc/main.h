@@ -7,6 +7,7 @@
 
 #ifndef INERTIALMODULE_INC_MAIN_H_
 #define INERTIALMODULE_INC_MAIN_H_
+#define INS
 //#define __cplusplus
 #include "stdbool.h"
 #include "stdlib.h"
@@ -34,6 +35,7 @@ typedef struct
 CAN_HandleTypeDef CanHandle;
 TIM_Base_InitTypeDef Timer;
 IMfrequencies IMfreqs;
+//USART_TypeDef huart1;
 volatile int counter;
 
 char makeFramedCANMessage(int *currentArrIndex, uint8_t *outArr, uint8_t *mode);

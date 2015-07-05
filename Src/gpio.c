@@ -58,10 +58,9 @@ void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */
-  __GPIOH_CLK_ENABLE();
   __GPIOC_CLK_ENABLE();
-  __GPIOB_CLK_ENABLE();
   __GPIOA_CLK_ENABLE();
+  __GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin : PC0 */
   GPIO_InitStruct.Pin = GPIO_PIN_0;

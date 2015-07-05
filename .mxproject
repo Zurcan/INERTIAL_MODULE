@@ -1,6 +1,6 @@
 [PreviousGenFiles]
-HeaderPath=C:/workspaceluna/InertialModule/Inc
-SourcePath=C:/workspaceluna/InertialModule/Src
+HeaderPath=C:/stm32Eclipse/workspace/INERTIAL_MODULE/Inc
+SourcePath=C:/stm32Eclipse/workspace/INERTIAL_MODULE/Src
 SourceFiles=gpio.h;can.h;i2c.h;tim.h;usart.h;stm32f2xx_it.h;stm32f2xx_hal_conf.h;gpio.c;can.c;i2c.c;tim.c;usart.c;stm32f2xx_it.c;stm32f2xx_hal_msp.c;main.c;
 HeaderFiles=gpio.h;can.h;i2c.h;tim.h;usart.h;stm32f2xx_it.h;stm32f2xx_hal_conf.h;
 

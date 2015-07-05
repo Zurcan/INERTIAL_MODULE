@@ -181,6 +181,7 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM7_Init();
   MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
 
   /* USER CODE BEGIN 2 */
 //  HAL_CAN_MspInit(&hcan2);
@@ -197,7 +198,8 @@ int main(void)
   IMfreqs.MDUSFrequency = 180;
   IMfreqs.totalFrequency = 500;
   checkFrequencies();
-  HAL_UART_Receive_IT(&huart1,mas,1);
+  HAL_UART_Receive_IT(&huart2,mas,1);
+
 //  Freq = 500;
   FreqPresc = CoreFreq/(IMfreqs.totalFrequency);
 //  FreqMDLU = 240;
@@ -298,19 +300,21 @@ int main(void)
 //		  TxMessage.StdId = &STDID;
 //		  HAL_CAN_Transmit_IT(&hcan2);
 //		  HAL_Delay(10);
-//		  if(HAL_CAN_Transmit(&hcan2,3)!=HAL_OK)
-//			  		{
-//			  			Error_Handler();
-//			  		}
-		  if(cntr!=-1)
-		  	  if(HAL_CAN_Transmit(&hcan2,5)!=HAL_OK)
-		  	  {
-		  		  Error_Handler();
-		  	  }
+		  if(HAL_CAN_Transmit(&hcan2,3)!=HAL_OK)
+			  		{
+			  			Error_Handler();
+			  		}
+//		  if(cntr!=-1)
+//		  	  if(HAL_CAN_Transmit(&hcan2,5)!=HAL_OK)
+//		  	  {
+//		  		  Error_Handler();
+//		  	  }
 //		  else
 //			  i = size/8;
 
 	  }
+	  HAL_UART_Receive_IT(&huart2,mas,1);
+//	  HAL_UART_Receive(&huart2,mas,1,1);
 	  cntr = 0;
 //	  MDLUTransmitData.LAx = 10;
 //	  MDLUTransmitData.LAy = 14;
@@ -345,11 +349,12 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = 1;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 16;
   RCC_OscInitStruct.PLL.PLLN = 240;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
@@ -362,8 +367,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
   HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3);
-
-  HAL_RCC_EnableCSS();
 
   HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
@@ -682,7 +685,11 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance==USART1)
 	{
-		HAL_UART_Receive_IT(&huart1, mas, 1);
+		HAL_UART_Receive_IT(huart, mas, 1);
+	}
+	if(huart->Instance==USART2)
+	{
+		HAL_UART_Receive_IT(huart, mas, 1);
 	}
 }
 void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)

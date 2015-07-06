@@ -116,9 +116,12 @@ int mesCount =86;
 uint8_t modeCANmsg;
 int size = 0;
 uint8_t INSstructArr[72];
+uint8_t DMU10_mes[66];
 volatile uint8_t messg[8];
 volatile int cntr=0;
-
+uint8_t headerLSB=0,headerMSB=0;
+bool recieveFlag;
+uint32_t mesCounter=0;
 unsigned short Serial;//
 unsigned char MsgType,Devtype,Priority,MsgMode;
 uint8_t framedArrCANTx[framedArrSIZE];
@@ -198,7 +201,8 @@ int main(void)
   IMfreqs.MDUSFrequency = 180;
   IMfreqs.totalFrequency = 500;
   checkFrequencies();
-  HAL_UART_Receive_IT(&huart2,mas,1);
+//  HAL_UART_Receive_IT(&huart2,mas,1);
+  HAL_UART_Receive_IT(&huart1,mas,1);
 
 //  Freq = 500;
   FreqPresc = CoreFreq/(IMfreqs.totalFrequency);
@@ -313,7 +317,7 @@ int main(void)
 //			  i = size/8;
 
 	  }
-	  HAL_UART_Receive_IT(&huart2,mas,1);
+//	  HAL_UART_Receive_IT(&huart1,mas,1);
 //	  HAL_UART_Receive(&huart2,mas,1,1);
 	  cntr = 0;
 //	  MDLUTransmitData.LAx = 10;
@@ -681,17 +685,81 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 //	}
 //
 //}
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance==USART1)
 	{
+
+		char rxbyte = (char)USART1->DR;
 		HAL_UART_Receive_IT(huart, mas, 1);
+
+		if(recieveFlag)
+		{
+
+			mesCounter++;
+			DMU10_mes[mesCounter] = rxbyte;
+			if(mesCounter==65)
+			{
+				recieveFlag=0;
+				mesCounter = 0;
+				clearDMU10_mes();
+			}
+		}
+		else
+		{
+			if(rxbyte==0xAA)
+			{
+
+				headerLSB = 0xAA;
+				recieveFlag = false;
+	//			headerMSB=0;
+			}
+			else if(rxbyte==0x55)
+			{
+				if(headerLSB = 0xAA)
+				{
+					headerMSB=0x55;
+					recieveFlag = true;
+					mesCounter = 0;
+					clearDMU10_mes();
+				}
+			}
+		}
+
 	}
 	if(huart->Instance==USART2)
 	{
+		char rxbyte = (char)USART1->DR;
 		HAL_UART_Receive_IT(huart, mas, 1);
 	}
 }
+
+void clearDMU10_mes()
+{
+	for(int i =0; i < 66; i++)
+	{
+		DMU10_mes[i] = 0;
+	}
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	if(huart->Instance == USART1)
+	{
+//		huart->ErrorCode = HAL_UART_ERROR_NONE;
+		if(HAL_UART_GetError(huart)==HAL_UART_ERROR_ORE)
+			__HAL_UART_CLEAR_FLAG(huart,HAL_UART_ERROR_ORE);
+		recieveFlag = false;
+		mesCounter = 0;
+		clearDMU10_mes();
+		huart->ErrorCode = HAL_UART_ERROR_NONE;
+//		huart->State = HAL_UART_STATE_READY;
+		char rxbyte = (char)USART1->DR;
+		HAL_UART_Receive_IT(huart, mas, 1);
+	}
+}
+
+
 void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)
 {
 	if(hcan->Instance==CAN2)

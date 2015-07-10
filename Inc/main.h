@@ -31,10 +31,35 @@ typedef struct
 	uint32_t MDADtickCounter;
 	freqTypes currentFreqType;
 }IMfrequencies;
-
+#pragma pack(push,1)
+typedef struct// __attribute__((packed))
+{
+	uint16_t header;
+	uint16_t messageCount;
+	float Xrate;
+	float Xacceleration;
+	float Yrate;
+	float Yacceleration;
+	float Zrate;
+	float Zacceleration;
+	float AuxInpVoltage;
+	float AverageIMUTemperature;
+	float XDeltaTheta;
+	float XDeltaVel;
+	float YDeltaTheta;
+	float YDeltaVel;
+	float ZDeltaTheta;
+	float ZDeltaVel;
+	uint16_t XBITdata;
+	uint16_t YBITdata;
+	uint16_t ZBITdata;
+	uint16_t checksum;
+}DMU10Message;
+#pragma pack(pop)
 CAN_HandleTypeDef CanHandle;
 TIM_Base_InitTypeDef Timer;
 IMfrequencies IMfreqs;
+DMU10Message DMU10msg;
 //USART_TypeDef huart1;
 volatile int counter;
 

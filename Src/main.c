@@ -116,11 +116,11 @@ int mesCount =86;
 uint8_t modeCANmsg;
 int size = 0;
 uint8_t INSstructArr[72];
-uint8_t DMU10_mes[66];
+uint8_t DMU10_mes[68];
 volatile uint8_t messg[8];
 volatile int cntr=0;
 uint8_t headerLSB=0,headerMSB=0;
-bool recieveFlag;
+bool recieveFlag = false;
 uint32_t mesCounter=0;
 unsigned short Serial;//
 unsigned char MsgType,Devtype,Priority,MsgMode;
@@ -191,6 +191,9 @@ int main(void)
   inc = 0;
   double tmp = 1.2;
   volatile uint8_t arr[sizeof(tmp)];
+  volatile int sizechecker;
+  sizechecker = sizeof(float);
+  sizechecker = sizeof(double);
   var2ArrConverter((char*)&tmp,sizeof(tmp),arr);
   volatile const uint8_t someval= calcCSofArr(arr,7);
   hcan2.pTxMsg = &TxMessage;
@@ -201,14 +204,9 @@ int main(void)
   IMfreqs.MDUSFrequency = 180;
   IMfreqs.totalFrequency = 500;
   checkFrequencies();
-//  HAL_UART_Receive_IT(&huart2,mas,1);
   HAL_UART_Receive_IT(&huart1,mas,1);
-
 //  Freq = 500;
   FreqPresc = CoreFreq/(IMfreqs.totalFrequency);
-//  FreqMDLU = 240;
-//  FreqMDUS = 240;
-//  FreqMDAD = 20;
   htim7.Init.Prescaler = FreqPresc;//*0.908;
   htim7.Init.Period = 1;
   CAN_FilterConfTypeDef sFilterConfig;
@@ -223,25 +221,13 @@ int main(void)
   sFilterConfig.FilterNumber = 0;
   sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
 //  HAL_CAN_ConfigFilter(&hcan2, &sFilterConfig);
-//
-//
-
   HAL_CAN_Init(&hcan2);
-//  HAL_NVIC_EnableIRQ(CAN2_TX_IRQn);
-//  HAL_NVIC_SetPriority(CAN2_RX0_IRQn, 1, 0);
-//  HAL_TIM_Base_Init(&htim7);
-//  HAL_TIM_Base_Start_IT(&htim7);
   volatile int clock = HAL_RCC_GetSysClockFreq();
   clock = HAL_RCC_GetPCLK1Freq();
   clock = HAL_RCC_GetHCLKFreq();
   clock = HAL_RCC_GetPCLK2Freq();
   volatile RCC_OscInitTypeDef rccConf;
   HAL_RCC_GetOscConfig(&rccConf);
-//  HAL_GPIO_WritePin(RESET_CSM_PORT,RESET_CSM_PIN,1);
- // HAL_UART_Receive_IT(&huart4, mas, 1); //Принимает в массив байты строки
-//  volatile INSCoordMessage *insdata;
-//  insdata = new INSCoordMessage;
-//  HAL_Delay(20000);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -253,39 +239,13 @@ int main(void)
   /* USER CODE BEGIN 3 */
   module = INScoords;
   HAL_GPIO_WritePin(CAN_SHDN_PORT,CAN_SHDN_PIN,0);
-//  HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
-//  CanRxMsgTypeDef *rxmes;
   size = getArraySize((uint8_t*)&insdata,sizeof(INSCoordMessage));
-  insdata.XIN = 0;
-  insdata.YIN = 1;
-  insdata.ZIN = 2;
-  insdata.aX = 3;
-  insdata.aY = 4;
-  insdata.aZ = 5;
-  insdata.angleX = 6;
-  insdata.angleY = 7;
-  insdata.angleZ = 8;
-  insdata.wX = 9;
-  insdata.wY = 10;
-  insdata.wZ = 11;
-  insdata.xDIS = 12;
-  insdata.yDIS = 13;
-  insdata.zDIS = 14;
 
 //  HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0);
   /* Infinite loop */
   while (1)
   {
-//	  if(HAL_CAN_Receive_IT(&hcan2,CAN_FIFO0)!=HAL_OK)
-//		{
-//			Error_Handler();
-//		}
-
-
-//	  INSstructArr= (uint8_t*)malloc((size_t)size);
 	  protocolMessageProcessor((uint8_t*)&insdata,sizeof(INSCoordMessage),INSstructArr);
-//	  cntr = mesQueueProcedure(INSstructArr,cntr,messg,size);
-//	  HAL_CAN_Transmit_IT(&hcan2);
 	  volatile int m;
 	  for(int i = 0; i < size/8; i++ )
 	  {
@@ -300,47 +260,14 @@ int main(void)
 		  prepareSTDID(m,module);
 		  setTxDataMessage(module,messg);
 		  hcan2.pTxMsg = &TxMessage;
-//		  hcan2.pRxMsg = &RxMessage;
-//		  TxMessage.StdId = &STDID;
-//		  HAL_CAN_Transmit_IT(&hcan2);
-//		  HAL_Delay(10);
 		  if(HAL_CAN_Transmit(&hcan2,3)!=HAL_OK)
 			  		{
 			  			Error_Handler();
 			  		}
-//		  if(cntr!=-1)
-//		  	  if(HAL_CAN_Transmit(&hcan2,5)!=HAL_OK)
-//		  	  {
-//		  		  Error_Handler();
-//		  	  }
-//		  else
-//			  i = size/8;
 
 	  }
-//	  HAL_UART_Receive_IT(&huart1,mas,1);
-//	  HAL_UART_Receive(&huart2,mas,1,1);
 	  cntr = 0;
-//	  MDLUTransmitData.LAx = 10;
-//	  MDLUTransmitData.LAy = 14;
-//	  MDLUTransmitData.LAz = 22;
-//	  MDLUTransmitData.service =0x12;
-////	  MDLUTransmitData.CSL = 0;
-////	  MDLUTransmitData.CSL= calcCSofArr((uint8_t*)&MDLUTransmitData,8);
-//	  MDUSTransmitData.ARx = 100;
-//	  MDUSTransmitData.ARy = 170;
-//	  MDUSTransmitData.ARz = 33;
-//	  MDLUTransmitData.service =0x14;
-//
-//	  MDADTransmitData.pressure = 100000;
-//	  MDADTransmitData.temperature = 22.1;
-//	  MDADTransmitData.service = 0x13;
-//	  MDLUTransmitData.CSL = 0;
-//	  MDLUTransmitData.CSL= calcCSofArr((uint8_t*)&MDLUTransmitData,8);
-//	  HAL_GPIO_TogglePin(LED_LEG_PORT,LED_LEG_PIN);
-
-//  }
  }
-//}
   /* USER CODE END 3 */
 
 }
@@ -379,31 +306,10 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-//int checkLattitudeLongtitude(char *arr)
-//{
-//	volatile char arr1[8],arr2[8],arr3[8];
-//	volatile double lattitude = 0,longtitude = 0, altitude=0;
-//	volatile double *l1,*l2,*a1;
-//	for(int i = 0; i < 8; i++)
-//		arr1[i] = *arr++;
-//	for(int i = 0; i < 8; i++)
-//		arr2[i] = *arr++;
-//	for(int i = 0; i < 8; i++)
-//		arr3[i] = *arr++;
-//	l1 = (double*)arr1;
-//	l2 = (double*)arr2;
-//	a1 = (double*)arr3;
-//	lattitude = *l1;
-//	longtitude = *l2;
-//	altitude = *a1;
-////	if((lattitude==0)&(longtitude==0))//&(altitude==0))
-////		HAL_GPIO_WritePin(LED_1_PORT,LED_1_PIN,GPIO_PIN_SET);//(CAN_SHDN_PORT,CAN_SHDN_PIN);
-////	else
-////		HAL_GPIO_WritePin(LED_1_PORT,LED_1_PIN,GPIO_PIN_RESET);
-//	return 0;
-//}
 
-/*
+
+
+/*NOT IN USE NOW!!!!!
  * procedure func calculate which of subdevices'(MDLU,MDUS,MDAD) data should now be transmitted on CAN
  * also checks cycle state: 0 means transmition to be continued, 1 means last subdevice tick, and beginning new cycle
  * of transmition on next step
@@ -462,7 +368,7 @@ char freqQueue(char *f)
 	}
 
 }
-/*
+/*NOT IN USE NOW!!!!
  * check correctness of desired MDAD,MDLU and MDUS frequencies, do their sum is equal to totalFrequency of device
  * returns 0 if ok, and  1 if nope
  */
@@ -479,138 +385,6 @@ char checkFrequencies()
 		return 1;
 }
 
-char parseArray(uint8_t *inArr, uint16_t inArrLength, int arrType, uint8_t *outArr, uint16_t *outArrLength)
-{
-	char err=0;
-//	uint8_t tmpArr[300];
-	uint8_t i;
-//	 vector<uint8_t> tmpArr;
-//	 vector<uint8_t>::iterator tmpIterator;
-//
-//	 for(i = 0; i < inArrLength; i++)
-//	 {
-	//	 tmpArr.insert(*inMas);
-//		 tmpArr.at(i) = *inMas;
-//		 tmpArr.push_back(*inMas);
-//		 tmpArr[i]
-//		 inArr++;
-//	 }
-	switch (arrType)
-	{
-
-		case 0x41:
-		{
-			for(i = 0; i < inArrLength; i++)
-			{
-				if(i<8)
-				{
-					*outArrLength++;		//incrementing value
-					*outArr =  *inArr;
-					inArr++;				//incrementing address
-				}
-
-			}
-			break;
-		}
-		case 0x88:
-		{
-			for(i = 0; i < inArrLength; i++)
-			{
-				if(i<40)
-				{
-					*outArrLength++;		//incrementing value
-					*outArr =  *inArr;
-					inArr++;				//incrementing address
-				}
-				if(i==68)
-				{
-					*outArrLength++;		//incrementing value
-					*outArr =  *inArr;
-					inArr++;				//incrementing address
-				}
-
-			}
-			break;
-		}
-		default:
-		{
-			err = 1;
-			break;
-		}
-
-
-	}
-	return err;
-}
-
-char makeFramedCANMessage(int *currentArrIndex, uint8_t *outArr, uint8_t *mode)
-{
-	char ret=1;
-	uint8_t framesQuantity=0;
-	uint8_t currentFrame = 0;
-	uint8_t locmode = 0;
-	uint8_t currentIndex = *currentArrIndex;
-	currentFrame = currentIndex/7;
-	framesQuantity = sizeof(framedArrCANTx)/7+1;
-	if(currentIndex/7+1 <= framesQuantity)
-	{
-		for(int i=0; i < 8; i++)
-		{
-			if(i!=7)
-			{
-				*outArr = framedArrCANTx[currentIndex];
-				currentIndex++;
-
-			}
-			else
-			{
-				if(currentIndex==7)
-				{
-					*outArr = framesQuantity;
-					currentFrame++;
-					locmode = 1;
-											//also need to set correct mode flag in extID
-				}
-				else
-				{
-					currentFrame++;
-					if(framesQuantity>currentFrame) //not first not last frame
-						{
-							*outArr = currentFrame;
-							locmode = 2;
-						}
-					else
-						{
-							if(framesQuantity == currentFrame)
-							{
-								*outArr = calcCSofArr(framedArrCANTx,sizeof(framedArrCANTx));
-								locmode = 3;
-							}
-							else
-							{
-								ret = 0;
-								locmode = 0;
-							}
-						}
-
-
-
-				}
-			}
-			outArr++;
-		}
-	}
-	else
-		{
-			ret = 0;
-			locmode = 0;
-		}
-	*mode = locmode;
-	*currentArrIndex = currentIndex;
-//	Serial=0x02;
-	MsgMode = locmode;
-	return ret;
-}
 
 
 void Error_Handler()
@@ -676,21 +450,12 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 	}
 }
 
-//void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
-//{
-//	if(hcan->Instance==CAN2)
-//	{
-//		volatile int status = HAL_CAN_GetState(hcan);
-//		HAL_CAN_Receive_IT(hcan,CAN_FIFO0);
-//	}
-//
-//}
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance==USART1)
 	{
 
-		char rxbyte = (char)USART1->DR;
+		uint8_t rxbyte = (uint8_t)USART1->DR;
 		HAL_UART_Receive_IT(huart, mas, 1);
 
 		if(recieveFlag)
@@ -698,30 +463,42 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 			mesCounter++;
 			DMU10_mes[mesCounter] = rxbyte;
-			if(mesCounter==65)
+			if(mesCounter==67)
 			{
+//			    DMU10msg = *(DMU10Message*)DMU10_mes;
+				uint8_t tmparr[68];
+				straightToInverseConverter(DMU10_mes,sizeof(DMU10Message),tmparr);
+			    memcpy(&DMU10msg,tmparr,sizeof(DMU10Message));
+			    convertDMU10ToINSMessage(&insdata,DMU10msg);
 				recieveFlag=0;
 				mesCounter = 0;
+				headerLSB=0;
+				headerMSB=0;
 				clearDMU10_mes();
 			}
 		}
 		else
 		{
-			if(rxbyte==0xAA)
+//			headerLSB=0;
+			if(rxbyte==0x55)
 			{
 
-				headerLSB = 0xAA;
+				headerMSB = 0x55;
 				recieveFlag = false;
+				clearDMU10_mes();
+				mesCounter=0;
+				DMU10_mes[mesCounter] = rxbyte;
 	//			headerMSB=0;
 			}
-			else if(rxbyte==0x55)
+			else if(rxbyte==0xAA)
 			{
-				if(headerLSB = 0xAA)
+//				headerLSB = 0;
+				if(headerMSB == 0x55)
 				{
-					headerMSB=0x55;
+					headerLSB=0xAA;
 					recieveFlag = true;
-					mesCounter = 0;
-					clearDMU10_mes();
+//					mesCounter = 1;
+					DMU10_mes[++mesCounter] = rxbyte;
 				}
 			}
 		}
@@ -729,14 +506,68 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	}
 	if(huart->Instance==USART2)
 	{
-		char rxbyte = (char)USART1->DR;
+		char rxbyte = (char)USART2->DR;
 		HAL_UART_Receive_IT(huart, mas, 1);
 	}
 }
 
+void convertDMU10ToINSMessage(INSCoordMessage *ins,DMU10Message dmu)
+{
+	ins->aX = dmu.Xacceleration;
+	ins->aY = dmu.Yacceleration;
+	ins->aZ = dmu.Zacceleration;
+	ins->wX = dmu.Xrate;
+	ins->wY = dmu.Yrate;
+	ins->wZ = dmu.Zrate;
+	ins->XIN = 0;
+	ins->YIN = 0;
+	ins->ZIN = 0;
+	ins->angleX = dmu.XDeltaTheta;
+	ins->angleY = dmu.YDeltaTheta;
+	ins->angleZ = dmu.ZDeltaTheta;
+	ins->xDIS = 0;
+	ins->yDIS = 0;
+	ins->zDIS = 0;
+
+}
+
+int straightToInverseConverter(uint8_t *inarr, uint32_t size, uint8_t *outarr)
+{
+	if(size==sizeof(DMU10Message))
+	{
+		outarr[0]=inarr[1];
+		outarr[1]=inarr[0];
+
+		outarr[2]=inarr[3];
+		outarr[3]=inarr[2];
+		for(int i = 4; i < 60; i+=4)
+		{
+			outarr[i]=inarr[i+3];
+			outarr[i+1]=inarr[i+2];
+			outarr[i+2]=inarr[i+1];
+			outarr[i+3]=inarr[i];
+		}
+
+		outarr[60]=inarr[61];
+	    outarr[61]=inarr[60];
+
+	    outarr[62]=inarr[63];
+	    outarr[63]=inarr[62];
+
+		outarr[64]=inarr[65];
+	    outarr[65]=inarr[64];
+
+	    outarr[66]=inarr[67];
+	    outarr[67]=inarr[66];
+
+	}
+	else return -1;
+	return 0;
+}
+
 void clearDMU10_mes()
 {
-	for(int i =0; i < 66; i++)
+	for(int i =0; i < 68; i++)
 	{
 		DMU10_mes[i] = 0;
 	}
